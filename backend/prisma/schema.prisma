@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+ 
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+ 
+model customers {
+  customer_id  Int     @id @default(autoincrement())
+  first_name   String  @db.VarChar(50)
+  last_name    String  @db.VarChar(50)
+  email        String? @unique @db.VarChar(100) // Optional, but unique
+  address      String? @db.VarChar(255)
+  phone_number String? @db.VarChar(20)
+}
+ 
+model orderdetail {
+  order_id   Int
+  product_id Int
+  quantity   Int
+  unit_price Decimal @db.Decimal(10, 2)
+ 
+  @@id([order_id, product_id])
+  @@index([product_id], map: "product_id")
+}
+ 
+model orders {
+  order_id     Int                  @id
+  customer_id  Int
+  order_date   DateTime             @default(now()) @db.DateTime(0)
+  order_status orders_order_status?
+  total_amount Decimal              @db.Decimal(10, 2)
+ 
+  @@index([customer_id], map: "customer_id")
+}
+ 
+model payments {
+  payment_id     Int                      @id @default(autoincrement())
+  order_id       Int
+  payment_method String?                  @db.VarChar(50)
+  payment_date   DateTime?                @db.DateTime(0)
+  amount         Decimal                  @db.Decimal(10, 2)
+  remark         String?                  @db.VarChar(255)
+  payment_status payments_payment_status?
+ 
+  @@index([order_id], map: "order_id")
+}
+ 
+model products {
+  product_id  Int     @id
+  name        String  @db.VarChar(100)
+  description String? @db.Text
+  price       Decimal @db.Decimal(10, 2)
+  category    String? @db.VarChar(50)
+  image_url   String? @db.VarChar(255)
+}
+ 
+model users {
+  UserName String  @unique(map: "Users_UNIQUE") @db.VarChar(100)
+  UserID   Int     @id @default(autoincrement())
+  Password String  @db.VarChar(100)
+  Status   String? @db.VarChar(100)
+  Role     String? @db.VarChar(100)
+}
+ 
+enum orders_order_status {
+  processing
+  completed
+  cancelled
+}
+ 
+enum payments_payment_status {
+  pending
+  completed
+  failed
+}
